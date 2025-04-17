@@ -1,5 +1,5 @@
 import { unlink, readdir } from 'fs/promises'
-import { join } from 'path'
+import { join, resolve } from 'path'
 import { existsSync } from 'fs'
 
 export default defineEventHandler(async (event) => {
@@ -14,11 +14,14 @@ export default defineEventHandler(async (event) => {
       }
     }
 
+    // 確定應用程序根目錄 - 修正在生產環境中的路徑問題
+    const projectRoot = resolve(process.cwd())
+
     // 根據類型確定文件路徑
     let filePath
     let relatedPath = null // 關聯文件路徑
-    const uploadDir = join(process.cwd(), 'public', 'uploads')
-    const qrCodesDir = join(process.cwd(), 'public', 'qrcodes')
+    const uploadDir = join(projectRoot, 'public', 'uploads')
+    const qrCodesDir = join(projectRoot, 'public', 'qrcodes')
 
     console.log('接收到刪除請求:', body)
     console.log('上傳目錄路徑:', uploadDir)

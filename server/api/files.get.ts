@@ -1,12 +1,15 @@
 import { readdir, stat, mkdir } from 'fs/promises'
-import { join, basename } from 'path'
+import { join, basename, resolve } from 'path'
 import { existsSync } from 'fs'
 
 export default defineEventHandler(async (event) => {
   try {
+    // 確定應用程序根目錄 - 修正在生產環境中的路徑問題
+    const projectRoot = resolve(process.cwd())
+
     // 獲取上傳文件和QR碼的目錄
-    const uploadDir = join(process.cwd(), 'public', 'uploads')
-    const qrCodesDir = join(process.cwd(), 'public', 'qrcodes')
+    const uploadDir = join(projectRoot, 'public', 'uploads')
+    const qrCodesDir = join(projectRoot, 'public', 'qrcodes')
 
     // 檢查目錄是否存在，不存在則創建
     if (!existsSync(uploadDir)) {

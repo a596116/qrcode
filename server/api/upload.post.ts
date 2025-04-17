@@ -1,7 +1,7 @@
 import { readMultipartFormData } from 'h3'
 import { randomUUID } from 'crypto'
 import { writeFile, mkdir } from 'fs/promises'
-import { join } from 'path'
+import { join, resolve } from 'path'
 import QRCode from 'qrcode'
 
 export default defineEventHandler(async (event) => {
@@ -36,9 +36,12 @@ export default defineEventHandler(async (event) => {
       ? new TextDecoder().decode(lightColorField.data)
       : '#ffffff'
 
+    // 確定應用程序根目錄 - 修正在生產環境中的路徑問題
+    const projectRoot = resolve(process.cwd())
+
     // 創建上傳目錄
-    const uploadDir = join(process.cwd(), 'public', 'uploads')
-    const qrCodesDir = join(process.cwd(), 'public', 'qrcodes')
+    const uploadDir = join(projectRoot, 'public', 'uploads')
+    const qrCodesDir = join(projectRoot, 'public', 'qrcodes')
 
     try {
       await mkdir(uploadDir, { recursive: true })
@@ -151,6 +154,6 @@ export default defineEventHandler(async (event) => {
 
 // 獲取檔案副檔名的輔助函數
 function getFileExt(filename: string): string {
-  const lastDotIndex = filename.lastIndexOf('.')
-  return lastDotIndex !== -1 ? filename.substring(lastDotIndex) : ''
+  const parts = filename.split('.')
+  return parts.length > 1 ? `.${parts.pop()}` : ''
 }
