@@ -7,11 +7,19 @@ RUN npm install -g pnpm
 # 設置工作目錄
 WORKDIR /app
 
+# 設置環境變數
+ENV NODE_ENV=production
+ENV NUXT_PUBLIC_SITE_URL=http://localhost:4088
+ENV API_SERVER_URL=http://localhost:3000
+
 # 複製package.json文件
 COPY package.json ./
 
 # 安裝根目錄依賴
 RUN pnpm install
+
+# 先創建必要的目錄結構
+RUN mkdir -p /app/web /app/express-upload-service
 
 # 複製前端和後端的package.json
 COPY web/package.json ./web/
@@ -27,6 +35,11 @@ WORKDIR /app
 # 構建階段 - 構建前端應用
 FROM node:18-alpine AS builder
 RUN npm install -g pnpm
+
+# 設置環境變數
+ENV NODE_ENV=production
+ENV NUXT_PUBLIC_SITE_URL=http://localhost:4088
+ENV API_SERVER_URL=http://localhost:3000
 
 WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
@@ -46,36 +59,46 @@ FROM node:18-alpine AS runner
 # 安裝工具以支持並行運行多個服務
 RUN npm install -g npm-run-all pnpm
 
-# 創建非root用戶
-RUN addgroup --system --gid 1001 nodejs && \
-    adduser --system --uid 1001 qrcodeuser && \
-    mkdir -p /app/express-upload-service/uploads /app/express-upload-service/qrcodes && \
-    chown -R qrcodeuser:nodejs /app
-
-# 設置工作目錄
-WORKDIR /app
-
-# 複製啟動腳本
-COPY start.sh ./
-RUN chmod +x start.sh
-
-# 複製構建好的前端應用
-COPY --from=builder --chown=qrcodeuser:nodejs /app/web/.output /app/web/.output
-COPY --from=builder --chown=qrcodeuser:nodejs /app/web/package.json /app/web/
-
-# 複製後端應用
-COPY --from=deps --chown=qrcodeuser:nodejs /app/express-upload-service/node_modules /app/express-upload-service/node_modules
-COPY --chown=qrcodeuser:nodejs express-upload-service /app/express-upload-service/
-COPY --chown=qrcodeuser:nodejs package.json ./
-
 # 設置環境變數
 ENV PORT=3000
 ENV NODE_ENV=production
 ENV NUXT_PUBLIC_SITE_URL=http://localhost:4088
 ENV API_SERVER_URL=http://localhost:3000
 
+# 創建非root用戶
+RUN addgroup --system --gid 1001 nodejs && \
+    adduser --system --uid 1001 qrcodeuser
+
+# 設置工作目錄
+WORKDIR /app
+
+# 創建必要的目錄
+RUN mkdir -p /app/web /app/express-upload-service/uploads /app/express-upload-service/qrcodes && \
+    chown -R qrcodeuser:nodejs /app
+
+# 複製啟動腳本
+COPY start.sh ./
+COPY web-start.sh ./
+RUN chmod +x start.sh web-start.sh
+
+# 複製根目錄package.json
+COPY package.json ./
+
+# 複製構建好的前端應用
+COPY --from=builder --chown=qrcodeuser:nodejs /app/web/.output /app/web/.output
+COPY --from=builder --chown=qrcodeuser:nodejs /app/web/package.json /app/web/package.json
+
+# 複製後端應用
+COPY --from=deps --chown=qrcodeuser:nodejs /app/express-upload-service/node_modules /app/express-upload-service/node_modules
+COPY --chown=qrcodeuser:nodejs express-upload-service /app/express-upload-service/
+
 # 設置正確的權限
 RUN chmod -R 777 /app/express-upload-service/uploads /app/express-upload-service/qrcodes
+
+# 列出目錄結構以進行調試
+RUN echo "App directory:" && ls -la /app && \
+    echo "Web directory:" && ls -la /app/web && \
+    echo "Express directory:" && ls -la /app/express-upload-service
 
 # 切換到非root用戶
 USER qrcodeuser
