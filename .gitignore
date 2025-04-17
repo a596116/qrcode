@@ -19,8 +19,8 @@ logs
 .idea
 
 # Local env files
-.env
-.env.*
+# .env
+# .env.*
 !.env.example
 
 # 上傳的檔案和生成的QR碼
