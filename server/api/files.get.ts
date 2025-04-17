@@ -5,6 +5,7 @@ import { existsSync } from 'fs'
 export default defineEventHandler(async (event) => {
   try {
     // 確定應用程序根目錄 - 修正在生產環境中的路徑問題
+    // const projectRoot = '/'
     const projectRoot = resolve(process.cwd())
 
     // 獲取上傳文件和QR碼的目錄
