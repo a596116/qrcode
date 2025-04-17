@@ -16,7 +16,7 @@ services:
     environment:
       - NODE_ENV=production
       - NUXT_PUBLIC_SITE_URL=http://localhost:4088
-      - API_SERVER_URL=http://backend:3000
+      - API_SERVER_URL=https://api-qrcode.twhaodai.com
     depends_on:
       - backend
     networks:
@@ -47,6 +47,7 @@ services:
     environment:
       - NODE_ENV=production
       - PORT=3000
+      - SITE_URL=https://api-qrcode.twhaodai.com
     networks:
       - haodai
     healthcheck:

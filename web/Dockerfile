@@ -6,7 +6,7 @@ WORKDIR /app
 # 設置環境變數
 ENV NODE_ENV=production
 ENV NUXT_PUBLIC_SITE_URL=http://localhost:4088
-ENV API_SERVER_URL=http://localhost:3000
+ENV API_SERVER_URL=https://api-qrcode.twhaodai.com
 
 # 安裝pnpm
 RUN npm install -g pnpm
@@ -33,6 +33,7 @@ WORKDIR /app
 # 設置環境變數
 ENV NODE_ENV=production
 ENV PORT=4088
+ENV API_SERVER_URL=https://api-qrcode.twhaodai.com
 ENV TZ="Asia/Taipei"
 
 # 安裝pnpm

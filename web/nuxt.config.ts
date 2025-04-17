@@ -23,7 +23,8 @@ export default defineNuxtConfig({
     public: {
       siteUrl:
         process.env.NUXT_PUBLIC_SITE_URL || 'https://qrcode.twhaodai.com',
-      apiServerUrl: process.env.API_SERVER_URL || 'http://localhost:3000',
+      apiServerUrl:
+        process.env.API_SERVER_URL || 'https://api-qrcode.twhaodai.com',
     },
   },
 })
