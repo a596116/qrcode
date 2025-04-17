@@ -216,13 +216,12 @@
               alt="QR Code"
               class="max-w-full p-2 border rounded-md max-h-48"
             />
-            <a
-              :href="qrCodeUrl"
-              download="qrcode.png"
+            <button
+              @click="downloadQrCode"
               class="px-4 py-2 mt-4 font-medium text-white transition bg-green-500 rounded-md hover:bg-green-600"
             >
               下載QR碼
-            </a>
+            </button>
           </div>
         </div>
       </div>
@@ -376,6 +375,35 @@ const toggleFullscreen = () => {
       document.exitFullscreen()
     }
   }
+}
+
+// 添加以下函數到script部分
+const downloadFile = (): void => {
+  if (!fileUrl.value) return
+
+  // 解析URL獲取檔案ID
+  const fileId = fileUrl.value.split('/').pop()
+  if (!fileId) return
+
+  // 使用伺服器API進行下載
+  const downloadUrl = getApiFileUrl(`/api/download/file/${fileId}`)
+
+  // 使用瀏覽器原生方法打開下載
+  window.open(downloadUrl, '_blank')
+}
+
+const downloadQrCode = (): void => {
+  if (!qrCodeUrl.value) return
+
+  // 解析URL獲取QR碼ID
+  const qrId = qrCodeUrl.value.split('/').pop()
+  if (!qrId) return
+
+  // 使用伺服器API進行下載
+  const downloadUrl = getApiFileUrl(`/api/download/qrcode/${qrId}`)
+
+  // 使用瀏覽器原生方法打開下載
+  window.open(downloadUrl, '_blank')
 }
 
 // 生命週期鉤子

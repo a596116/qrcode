@@ -234,6 +234,26 @@
                   </svg>
                 </button>
               </div>
+              <div class="mt-2">
+                <button
+                  @click="downloadFile"
+                  class="inline-flex items-center px-3 py-2 text-sm font-medium text-indigo-700 bg-indigo-100 rounded-md hover:bg-indigo-200 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    class="w-4 h-4 mr-1"
+                    viewBox="0 0 20 20"
+                    fill="currentColor"
+                  >
+                    <path
+                      fill-rule="evenodd"
+                      d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z"
+                      clip-rule="evenodd"
+                    />
+                  </svg>
+                  下載檔案
+                </button>
+              </div>
             </div>
 
             <div class="p-4 border border-gray-200 rounded-lg bg-gray-50">
@@ -287,10 +307,9 @@
                 class="p-2 bg-white border border-gray-200 rounded-lg shadow-sm"
               >
                 <img :src="qrCodeUrl" alt="QR Code" class="w-48 h-48 mx-auto" />
-                <a
-                  :href="qrCodeUrl"
-                  download
-                  class="flex items-center justify-center px-4 py-2 mt-3 text-sm text-white transition bg-purple-600 rounded-md hover:bg-purple-700"
+                <button
+                  @click="downloadQrCode"
+                  class="flex items-center justify-center w-full px-4 py-2 mt-3 text-sm text-white transition bg-purple-600 rounded-md hover:bg-purple-700"
                 >
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
@@ -305,7 +324,7 @@
                     />
                   </svg>
                   下載QR碼
-                </a>
+                </button>
               </div>
             </div>
 
@@ -634,6 +653,46 @@ const resetForm = (): void => {
   if (fileInput.value) {
     fileInput.value.value = ''
   }
+}
+
+const downloadQrCode = (): void => {
+  if (!qrCodeUrl.value) {
+    error.value = 'QR碼尚未生成'
+    return
+  }
+
+  // 解析URL獲取QR碼ID
+  const qrCodeId = qrCodeUrl.value.split('/').pop()
+  if (!qrCodeId) {
+    error.value = '無法獲取QR碼ID'
+    return
+  }
+
+  // 使用伺服器API進行下載
+  const downloadUrl = getApiFileUrl(`/api/download/qrcode/${qrCodeId}`)
+
+  // 使用瀏覽器原生方法打開下載
+  window.open(downloadUrl, '_blank')
+}
+
+const downloadFile = (): void => {
+  if (!fileUrl.value) {
+    error.value = '檔案尚未上傳'
+    return
+  }
+
+  // 解析URL獲取檔案ID
+  const fileId = fileUrl.value.split('/').pop()
+  if (!fileId) {
+    error.value = '無法獲取檔案ID'
+    return
+  }
+
+  // 使用伺服器API進行下載
+  const downloadUrl = getApiFileUrl(`/api/download/file/${fileId}`)
+
+  // 使用瀏覽器原生方法打開下載
+  window.open(downloadUrl, '_blank')
 }
 </script>
 

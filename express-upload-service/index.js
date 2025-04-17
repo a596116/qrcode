@@ -324,6 +324,149 @@ app.delete('/api/file/:id', (req, res) => {
   }
 })
 
+// 添加下載檔案API
+app.get('/api/download/file/:id', (req, res) => {
+  try {
+    const fileId = req.params.id
+    const filePath = path.join(uploadDir, fileId)
+
+    // 檢查檔案是否存在
+    if (!fs.existsSync(filePath)) {
+      return res.status(404).json({
+        success: false,
+        message: '找不到檔案',
+      })
+    }
+
+    // 獲取原始檔案名
+    const fileInfo = fs.statSync(filePath)
+
+    // 設置檔案名編碼以處理中文檔名
+    const originalFileName = req.query.name || fileId
+    const encodedFileName = encodeURIComponent(originalFileName)
+
+    // 設置適當的header
+    res.setHeader('Content-Type', 'application/octet-stream')
+    res.setHeader(
+      'Content-Disposition',
+      `attachment; filename="${encodedFileName}"`
+    )
+    res.setHeader('Content-Length', fileInfo.size)
+
+    // 提供檔案下載
+    const fileStream = fs.createReadStream(filePath)
+    fileStream.pipe(res)
+  } catch (error) {
+    console.error('下載檔案錯誤:', error)
+    res.status(500).json({
+      success: false,
+      message: '下載檔案失敗',
+      error: error.message,
+    })
+  }
+})
+
+// 添加下載QR碼API
+app.get('/api/download/qrcode/:id', (req, res) => {
+  try {
+    const qrId = req.params.id
+    let qrPath = ''
+
+    // 檢查格式是否正確
+    if (qrId.startsWith('qrcode-')) {
+      qrPath = path.join(qrCodesDir, qrId)
+    } else {
+      qrPath = path.join(qrCodesDir, `qrcode-${qrId}.png`)
+    }
+
+    // 檢查QR碼檔案是否存在
+    if (!fs.existsSync(qrPath)) {
+      return res.status(404).json({
+        success: false,
+        message: '找不到QR碼',
+      })
+    }
+
+    // 獲取QR碼檔案資訊
+    const qrInfo = fs.statSync(qrPath)
+
+    // 設置檔案名編碼
+    const fileName = req.query.name || path.basename(qrPath)
+    const encodedFileName = encodeURIComponent(fileName)
+
+    // 設置適當的header
+    res.setHeader('Content-Type', 'image/png')
+    res.setHeader(
+      'Content-Disposition',
+      `attachment; filename="${encodedFileName}"`
+    )
+    res.setHeader('Content-Length', qrInfo.size)
+
+    // 提供QR碼下載
+    const qrStream = fs.createReadStream(qrPath)
+    qrStream.pipe(res)
+  } catch (error) {
+    console.error('下載QR碼錯誤:', error)
+    res.status(500).json({
+      success: false,
+      message: '下載QR碼失敗',
+      error: error.message,
+    })
+  }
+})
+
+// 查看檔案API（不強制下載，直接在瀏覽器中查看）
+app.get('/api/preview/:id', (req, res) => {
+  try {
+    const fileId = req.params.id
+    const filePath = path.join(uploadDir, fileId)
+
+    // 檢查檔案是否存在
+    if (!fs.existsSync(filePath)) {
+      return res.status(404).json({
+        success: false,
+        message: '找不到檔案',
+      })
+    }
+
+    // 獲取檔案的MIME類型
+    let mimeType = 'application/octet-stream' // 預設
+    if (fileId.startsWith('image-')) {
+      mimeType =
+        'image/' +
+        (fileId.endsWith('.png')
+          ? 'png'
+          : fileId.endsWith('.jpg') || fileId.endsWith('.jpeg')
+          ? 'jpeg'
+          : fileId.endsWith('.gif')
+          ? 'gif'
+          : 'webp')
+    } else if (fileId.startsWith('video-')) {
+      mimeType =
+        'video/' +
+        (fileId.endsWith('.mp4')
+          ? 'mp4'
+          : fileId.endsWith('.webm')
+          ? 'webm'
+          : 'mp4')
+    }
+
+    // 設置適當的header
+    res.setHeader('Content-Type', mimeType)
+
+    // 直接在瀏覽器中顯示檔案
+    const fileStream = fs.createReadStream(filePath)
+    fileStream.pipe(res)
+  } catch (error) {
+    console.error('預覽檔案錯誤:', error)
+    res.status(500).json({
+      success: false,
+      message: '預覽檔案失敗',
+      error: error.message,
+    })
+  }
+})
+
 // 啟動伺服器
 app.listen(port, () => {
   console.log(`伺服器已啟動，運行在 http://localhost:${port}`)

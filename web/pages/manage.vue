@@ -292,11 +292,9 @@
                   </svg>
                   查看檔案
                 </a>
-                <a
-                  v-if="item.filePath"
-                  :href="item.filePath || ''"
-                  download
-                  class="inline-flex items-center px-3 py-1.5 text-sm rounded-md transition-all duration-300 border border-emerald-600 text-emerald-600 hover:bg-emerald-50 hover:shadow-sm"
+                <button
+                  @click="downloadFile(item.filePath)"
+                  class="inline-flex items-center px-3 py-1.5 text-sm rounded-md transition-all duration-300 border border-blue-600 text-blue-600 hover:bg-blue-50 hover:shadow-sm"
                 >
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
@@ -311,11 +309,9 @@
                     />
                   </svg>
                   下載檔案
-                </a>
-                <a
-                  v-if="item.qrCodePath"
-                  :href="item.qrCodePath"
-                  download
+                </button>
+                <button
+                  @click="downloadQrCode(item.qrCodePath)"
                   class="inline-flex items-center px-3 py-1.5 text-sm rounded-md transition-all duration-300 border border-purple-600 text-purple-600 hover:bg-purple-50 hover:shadow-sm"
                 >
                   <svg
@@ -331,7 +327,7 @@
                     />
                   </svg>
                   下載QR碼
-                </a>
+                </button>
                 <button
                   @click="deleteItem(item)"
                   class="inline-flex items-center px-3 py-1.5 text-sm rounded-md transition-all duration-300 border border-red-600 text-red-600 hover:bg-red-50 hover:shadow-sm"
@@ -947,6 +943,35 @@ watch(
   },
   { immediate: true }
 )
+
+// 添加以下函數到script部分
+const downloadFile = (filePath: string): void => {
+  if (!filePath) return
+
+  // 解析URL獲取檔案ID
+  const fileId = filePath.split('/').pop()
+  if (!fileId) return
+
+  // 使用伺服器API進行下載
+  const downloadUrl = getApiFileUrl(`/api/download/file/${fileId}`)
+
+  // 使用瀏覽器原生方法打開下載
+  window.open(downloadUrl, '_blank')
+}
+
+const downloadQrCode = (qrPath: string): void => {
+  if (!qrPath) return
+
+  // 解析URL獲取QR碼ID
+  const qrId = qrPath.split('/').pop()
+  if (!qrId) return
+
+  // 使用伺服器API進行下載
+  const downloadUrl = getApiFileUrl(`/api/download/qrcode/${qrId}`)
+
+  // 使用瀏覽器原生方法打開下載
+  window.open(downloadUrl, '_blank')
+}
 </script>
 
 <style scoped>
