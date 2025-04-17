@@ -5,7 +5,7 @@ WORKDIR /app
 
 # 設置環境變數
 ENV NODE_ENV=production
-ENV PORT=3000
+ENV PORT=3023
 ENV SITE_URL=https://api-qrcode.twhaodai.com
 ENV TZ="Asia/Taipei"
 
@@ -27,7 +27,7 @@ RUN mkdir -p uploads qrcodes && \
 COPY . .
 
 # 暴露端口
-EXPOSE 3000
+EXPOSE 3023
 
 # 啟動應用
 CMD ["node", "index.js"]
