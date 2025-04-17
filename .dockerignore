@@ -1,43 +1,82 @@
 # 版本控制
 .git
+.github
 .gitignore
+.gitlab-ci.yml
 
 # 依賴
 node_modules
 */node_modules
 web/node_modules
 express-upload-service/node_modules
+pnpm-lock.yaml
+**/pnpm-lock.yaml
 
 # 構建輸出
 web/.nuxt
 web/.output
 web/dist
+web/node_modules
+web/.cache
+web/.nitro
 
-# 日誌
+# 開發工具和配置
+.vscode
+.idea
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
+.editorconfig
+.eslintrc
+.prettierrc
+.stylelintrc
+tsconfig.json
+jsconfig.json
+
+# 日誌和臨時文件
 *.log
 npm-debug.log*
 pnpm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+.tmp
+.temp
+*.bak
+*.backup
 
 # 環境變數
 .env
 .env.*
 !.env.example
-web/.env
-web/.env.*
-express-upload-service/.env
-express-upload-service/.env.*
+
+# 測試
+test
+tests
+__tests__
+coverage
+.nyc_output
+
+# 文檔
+docs
+README.md
+LICENSE
+
+# Docker相關文件（除了Dockerfile本身）
+.dockerignore
+docker-compose*.yml
+docker-compose.yml
+docker-compose.override.yml
+
+# 緩存和其他
+.npm
+.cache
+.yarn
+dist
+build
 
 # 上傳的檔案和生成的QR碼
 # 不排除這些目錄，但我們會用volume掛載它們
 # express-upload-service/uploads
-# express-upload-service/qrcodes
-
-# 編輯器
-.vscode
-.idea
-*.swp
-*.swo
-
-# 操作系統
-.DS_Store
-Thumbs.db 
+# express-upload-service/qrcodes 

@@ -467,6 +467,11 @@ app.get('/api/preview/:id', (req, res) => {
   }
 })
 
+// 健康檢查端點
+app.get('/api/ping', (req, res) => {
+  res.status(200).send('pong')
+})
+
 // 啟動伺服器
 app.listen(port, () => {
   console.log(`伺服器已啟動，運行在 http://localhost:${port}`)

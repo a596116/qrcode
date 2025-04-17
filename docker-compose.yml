@@ -5,23 +5,42 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
+      args:
+        - NODE_ENV=production
+      cache_from:
+        - node:18-alpine
     container_name: qrcode-app
     restart: unless-stopped
     ports:
       - "4088:4088"  # 前端服務
       - "3000:3000"  # 後端服務
     volumes:
-      - ./express-upload-service:/app/express-upload-service
-      - ./web:/app/web
-      - /app/web/node_modules
-      - /app/express-upload-service/node_modules
+      - qrcode_uploads:/app/express-upload-service/uploads
+      - qrcode_qrcodes:/app/express-upload-service/qrcodes
     environment:
       - NODE_ENV=production
       - PORT=3000
       - NUXT_PUBLIC_SITE_URL=http://localhost:4088
-      - API_SERVER_URL=http://localhost:3000 
+      - API_SERVER_URL=http://localhost:3000
     networks:
       - haodai
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://localhost:3000/api/ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 20s
+    deploy:
+      resources:
+        limits:
+          cpus: '1'
+          memory: 1G
+
+volumes:
+  qrcode_uploads:
+    driver: local
+  qrcode_qrcodes:
+    driver: local
 
 networks:
   haodai:
