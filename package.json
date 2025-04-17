@@ -11,7 +11,7 @@
     "install:web": "cd web && pnpm install",
     "install:server": "cd express-upload-service && pnpm install",
     "build": "cd web && pnpm run build",
-    "start": "npm-run-all --parallel start:web start:server",
+    "start": "ls -la && ls -la express-upload-service && npm-run-all --parallel start:web start:server",
     "start:web": "cd web && pnpm run preview",
     "start:server": "cd express-upload-service && pnpm run start"
   },
