@@ -1,0 +1,481 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>檔案上傳 QR碼生成</title>
+    <style>
+      body {
+        font-family: 'Microsoft JhengHei', 'PingFang TC', sans-serif;
+        line-height: 1.6;
+        color: #333;
+        max-width: 800px;
+        margin: 0 auto;
+        padding: 20px;
+        background-color: #f5f5f5;
+      }
+
+      h1,
+      h2 {
+        color: #6b46c1;
+      }
+
+      .card {
+        background: #fff;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        padding: 20px;
+        margin-bottom: 20px;
+      }
+
+      .upload-area {
+        border: 2px dashed #ccc;
+        border-radius: 8px;
+        padding: 40px;
+        text-align: center;
+        background: #fafafa;
+        cursor: pointer;
+        transition: all 0.3s;
+      }
+
+      .upload-area:hover {
+        border-color: #6b46c1;
+      }
+
+      .upload-area.drag-over {
+        border-color: #4c1d95;
+        background-color: #f3f0ff;
+      }
+
+      .sr-only {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        padding: 0;
+        margin: -1px;
+        overflow: hidden;
+        clip: rect(0, 0, 0, 0);
+        white-space: nowrap;
+        border: 0;
+      }
+
+      .button {
+        background-color: #6b46c1;
+        color: white;
+        border: none;
+        padding: 10px 20px;
+        border-radius: 6px;
+        cursor: pointer;
+        font-size: 16px;
+        transition: background-color 0.3s;
+      }
+
+      .button:hover {
+        background-color: #5a32a3;
+      }
+
+      .button:disabled {
+        background-color: #a3a3a3;
+        cursor: not-allowed;
+      }
+
+      .preview {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        margin-top: 20px;
+      }
+
+      .preview img,
+      .preview video {
+        max-width: 100%;
+        max-height: 300px;
+        border-radius: 6px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+      }
+
+      .file-details {
+        margin-top: 10px;
+        font-size: 14px;
+      }
+
+      .result {
+        margin-top: 20px;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 20px;
+      }
+
+      .qr-area,
+      .info-area {
+        flex: 1;
+        min-width: 250px;
+      }
+
+      .alert {
+        padding: 10px;
+        border-radius: 6px;
+        margin-bottom: 15px;
+      }
+
+      .alert-error {
+        background-color: #fee2e2;
+        border: 1px solid #fca5a5;
+        color: #b91c1c;
+      }
+
+      .alert-success {
+        background-color: #dcfce7;
+        border: 1px solid #86efac;
+        color: #166534;
+      }
+
+      .copy-link {
+        display: flex;
+        align-items: center;
+        background-color: #f3f4f6;
+        border-radius: 6px;
+        margin-top: 10px;
+        overflow: hidden;
+      }
+
+      .copy-link input {
+        flex: 1;
+        padding: 8px 12px;
+        border: none;
+        background: transparent;
+        font-size: 14px;
+      }
+
+      .copy-button {
+        background: #e5e7eb;
+        border: none;
+        padding: 8px 12px;
+        cursor: pointer;
+        transition: all 0.2s;
+      }
+
+      .copy-button:hover {
+        background: #d1d5db;
+      }
+
+      .copy-success {
+        background: #10b981;
+        color: white;
+      }
+
+      @media (max-width: 600px) {
+        .upload-area {
+          padding: 20px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <h1>檔案上傳與QR碼生成</h1>
+
+    <div class="card">
+      <h2>上傳檔案</h2>
+
+      <div id="uploadArea" class="upload-area">
+        <div id="uploadText">
+          <p>點擊或拖放檔案至此</p>
+          <input
+            id="fileInput"
+            type="file"
+            class="sr-only"
+            accept="image/*,video/*"
+          />
+          <p>支援的檔案格式: 圖片 (PNG, JPG, GIF)、影片 (MP4, WEBM)</p>
+          <p>檔案大小限制: 圖片 10MB、影片 100MB</p>
+        </div>
+
+        <div id="previewArea" class="preview" style="display: none">
+          <div id="mediaPreview"></div>
+          <div id="fileDetails" class="file-details"></div>
+          <button id="uploadButton" class="button" style="margin-top: 15px">
+            上傳檔案
+          </button>
+          <button
+            id="resetButton"
+            class="button"
+            style="margin-top: 10px; background-color: #ef4444"
+          >
+            重新選擇
+          </button>
+        </div>
+      </div>
+
+      <div
+        id="errorMessage"
+        class="alert alert-error"
+        style="display: none"
+      ></div>
+      <div
+        id="successMessage"
+        class="alert alert-success"
+        style="display: none"
+      ></div>
+    </div>
+
+    <div id="resultArea" class="card" style="display: none">
+      <h2>上傳結果</h2>
+
+      <div class="result">
+        <div class="qr-area">
+          <h3>QR碼</h3>
+          <div id="qrCodeImage"></div>
+          <div class="copy-link">
+            <input id="qrCodeUrl" type="text" readonly />
+            <button id="copyQrButton" class="copy-button">複製</button>
+          </div>
+        </div>
+
+        <div class="info-area">
+          <h3>檔案連結</h3>
+          <div class="copy-link">
+            <input id="fileUrl" type="text" readonly />
+            <button id="copyFileButton" class="copy-button">複製</button>
+          </div>
+          <button id="viewFileButton" class="button" style="margin-top: 10px">
+            查看檔案
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      // DOM 元素
+      const uploadArea = document.getElementById('uploadArea')
+      const fileInput = document.getElementById('fileInput')
+      const previewArea = document.getElementById('previewArea')
+      const uploadText = document.getElementById('uploadText')
+      const mediaPreview = document.getElementById('mediaPreview')
+      const fileDetails = document.getElementById('fileDetails')
+      const uploadButton = document.getElementById('uploadButton')
+      const resetButton = document.getElementById('resetButton')
+      const errorMessage = document.getElementById('errorMessage')
+      const successMessage = document.getElementById('successMessage')
+      const resultArea = document.getElementById('resultArea')
+      const qrCodeImage = document.getElementById('qrCodeImage')
+      const qrCodeUrl = document.getElementById('qrCodeUrl')
+      const fileUrl = document.getElementById('fileUrl')
+      const copyQrButton = document.getElementById('copyQrButton')
+      const copyFileButton = document.getElementById('copyFileButton')
+      const viewFileButton = document.getElementById('viewFileButton')
+
+      // 狀態變數
+      let selectedFile = null
+      let fileType = null
+
+      // 事件處理
+      uploadArea.addEventListener('click', () => {
+        if (uploadText.style.display !== 'none') {
+          fileInput.click()
+        }
+      })
+
+      fileInput.addEventListener('change', handleFileChange)
+      uploadButton.addEventListener('click', uploadFile)
+      resetButton.addEventListener('click', resetForm)
+      copyQrButton.addEventListener('click', () =>
+        copyToClipboard(qrCodeUrl, copyQrButton)
+      )
+      copyFileButton.addEventListener('click', () =>
+        copyToClipboard(fileUrl, copyFileButton)
+      )
+      viewFileButton.addEventListener('click', () => {
+        if (fileUrl.value) {
+          window.open(fileUrl.value, '_blank')
+        }
+      })
+
+      // 拖放功能
+      uploadArea.addEventListener('dragover', (e) => {
+        e.preventDefault()
+        if (uploadText.style.display !== 'none') {
+          uploadArea.classList.add('drag-over')
+        }
+      })
+
+      uploadArea.addEventListener('dragleave', () => {
+        uploadArea.classList.remove('drag-over')
+      })
+
+      uploadArea.addEventListener('drop', (e) => {
+        e.preventDefault()
+        uploadArea.classList.remove('drag-over')
+
+        if (
+          uploadText.style.display !== 'none' &&
+          e.dataTransfer.files.length > 0
+        ) {
+          const file = e.dataTransfer.files[0]
+          handleFile(file)
+        }
+      })
+
+      // 處理選擇的檔案
+      function handleFileChange(event) {
+        const files = event.target.files
+        if (files.length > 0) {
+          handleFile(files[0])
+        }
+      }
+
+      function handleFile(file) {
+        // 檢查檔案類型
+        if (file.type.startsWith('image/')) {
+          fileType = 'image'
+          if (file.size > 10 * 1024 * 1024) {
+            showError('圖片大小不能超過 10MB')
+            return
+          }
+        } else if (file.type.startsWith('video/')) {
+          fileType = 'video'
+          if (file.size > 100 * 1024 * 1024) {
+            showError('影片大小不能超過 100MB')
+            return
+          }
+        } else {
+          showError('不支援的檔案類型，請上傳圖片或影片')
+          return
+        }
+
+        selectedFile = file
+        hideError()
+        hideSuccess()
+        createPreview(file)
+      }
+
+      // 創建檔案預覽
+      function createPreview(file) {
+        uploadText.style.display = 'none'
+        previewArea.style.display = 'flex'
+
+        // 清除之前的預覽
+        mediaPreview.innerHTML = ''
+
+        if (fileType === 'image') {
+          const img = document.createElement('img')
+          img.src = URL.createObjectURL(file)
+          mediaPreview.appendChild(img)
+        } else if (fileType === 'video') {
+          const video = document.createElement('video')
+          video.controls = true
+          video.src = URL.createObjectURL(file)
+          mediaPreview.appendChild(video)
+        }
+
+        // 顯示檔案詳情
+        fileDetails.innerHTML = `
+                <p>檔案名稱: ${file.name}</p>
+                <p>檔案大小: ${formatFileSize(file.size)}</p>
+                <p>檔案類型: ${file.type}</p>
+            `
+      }
+
+      // 上傳檔案
+      async function uploadFile() {
+        if (!selectedFile) {
+          showError('請選擇檔案')
+          return
+        }
+
+        try {
+          uploadButton.disabled = true
+          uploadButton.textContent = '上傳中...'
+
+          const formData = new FormData()
+          formData.append('file', selectedFile)
+
+          const response = await fetch('/api/upload', {
+            method: 'POST',
+            body: formData,
+          })
+
+          const result = await response.json()
+
+          if (result.success) {
+            showSuccess('檔案上傳成功')
+            displayResult(result)
+          } else {
+            showError(result.message || '上傳失敗')
+          }
+        } catch (error) {
+          showError('上傳過程中發生錯誤: ' + error.message)
+        } finally {
+          uploadButton.disabled = false
+          uploadButton.textContent = '上傳檔案'
+        }
+      }
+
+      // 顯示上傳結果
+      function displayResult(data) {
+        resultArea.style.display = 'block'
+
+        // 顯示QR碼
+        qrCodeImage.innerHTML = `<img src="${data.qrCodeUrl}" alt="QR碼">`
+
+        // 設置URL
+        const baseUrl = window.location.origin
+        qrCodeUrl.value = `${baseUrl}${data.qrCodeUrl}`
+        fileUrl.value = `${baseUrl}${data.fileUrl}`
+      }
+
+      // 重置表單
+      function resetForm() {
+        selectedFile = null
+        fileType = null
+        uploadText.style.display = 'block'
+        previewArea.style.display = 'none'
+        fileInput.value = ''
+        hideError()
+        hideSuccess()
+        resultArea.style.display = 'none'
+      }
+
+      // 複製到剪貼板
+      function copyToClipboard(inputElement, buttonElement) {
+        inputElement.select()
+        document.execCommand('copy')
+
+        const originalText = buttonElement.textContent
+        buttonElement.textContent = '已複製'
+        buttonElement.classList.add('copy-success')
+
+        setTimeout(() => {
+          buttonElement.textContent = originalText
+          buttonElement.classList.remove('copy-success')
+        }, 2000)
+      }
+
+      // 輔助函數
+      function formatFileSize(bytes) {
+        if (bytes < 1024) return bytes + ' bytes'
+        if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(2) + ' KB'
+        return (bytes / (1024 * 1024)).toFixed(2) + ' MB'
+      }
+
+      function showError(message) {
+        errorMessage.textContent = message
+        errorMessage.style.display = 'block'
+        successMessage.style.display = 'none'
+      }
+
+      function hideError() {
+        errorMessage.style.display = 'none'
+      }
+
+      function showSuccess(message) {
+        successMessage.textContent = message
+        successMessage.style.display = 'block'
+        errorMessage.style.display = 'none'
+      }
+
+      function hideSuccess() {
+        successMessage.style.display = 'none'
+      }
+    </script>
+  </body>
+</html>

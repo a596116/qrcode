@@ -1,30 +1,21 @@
 {
-  "name": "qrcode",
+  "name": "qrcode-root",
+  "version": "1.0.0",
+  "description": "QR碼生成工具 - 根項目",
   "private": true,
-  "type": "module",
   "scripts": {
-    "build": "nuxt build",
-    "dev": "nuxt dev --host",
-    "generate": "nuxt generate",
-    "preview": "nuxt preview",
-    "postinstall": "nuxt prepare"
-  },
-  "dependencies": {
-    "@nuxt/image": "1.9.0",
-    "h3": "^1.15.1",
-    "nuxt": "^3.16.0",
-    "qrcode": "^1.5.4",
-    "vue": "^3.5.13",
-    "vue-router": "^4.5.0"
+    "dev": "npm-run-all --parallel dev:web dev:server",
+    "dev:web": "cd web && pnpm run dev",
+    "dev:server": "cd express-upload-service && pnpm run dev",
+    "install": "npm-run-all --parallel install:web install:server",
+    "install:web": "cd web && pnpm install",
+    "install:server": "cd express-upload-service && pnpm install",
+    "build": "cd web && pnpm run build",
+    "start": "npm-run-all --parallel start:web start:server",
+    "start:web": "cd web && pnpm run preview",
+    "start:server": "cd express-upload-service && pnpm run start"
   },
   "devDependencies": {
-    "@types/node": "^22.13.10",
-    "@types/qrcode": "^1.5.5",
-    "autoprefixer": "^10.4.21",
-    "heic2any": "^0.0.4",
-    "postcss": "^8.5.3",
-    "tailwindcss": "^3.4.3",
-    "typescript": "^5.8.2",
-    "vite": "^6.2.2"
+    "npm-run-all": "^4.1.5"
   }
 }

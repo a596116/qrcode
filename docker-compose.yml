@@ -1,0 +1,28 @@
+version: '3.8'
+
+services:
+  qrcode-app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: qrcode-app
+    restart: unless-stopped
+    ports:
+      - "4088:4088"  # 前端服務
+      - "3000:3000"  # 後端服務
+    volumes:
+      - ./express-upload-service/uploads:/app/express-upload-service/uploads
+      - ./express-upload-service/qrcodes:/app/express-upload-service/qrcodes
+    environment:
+      - NODE_ENV=production
+      - PORT=3000
+      - NUXT_PUBLIC_SITE_URL=http://localhost:4088
+      - API_SERVER_URL=http://localhost:3000 
+    networks:
+      - haodai
+
+networks:
+  haodai:
+    driver: bridge
+    external:
+      name: haodai

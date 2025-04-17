@@ -408,6 +408,7 @@
 <script setup lang="ts">
 import { ClientOnly } from '#components'
 import { ref, onMounted, computed, watch } from 'vue'
+import { apiRequest, getApiFileUrl } from '~/utils/api'
 
 // 頁面元數據
 useSeoMeta({
@@ -470,7 +471,7 @@ const fetchItems = async () => {
   resultMessage.value = null
 
   try {
-    const response = await fetch('/api/files')
+    const response = await apiRequest('api/files')
     const data = await response.json()
 
     if (data.success) {
@@ -515,8 +516,11 @@ const processHeicImage = async (url: string): Promise<string> => {
 
   if (isHeic && heic2any && process.client) {
     try {
+      // 獲取完整URL
+      const fullUrl = getApiFileUrl(url)
+
       // 獲取HEIC檔案內容
-      const response = await fetch(url)
+      const response = await fetch(fullUrl)
       const blob = await response.blob()
 
       // 轉換HEIC為JPEG
@@ -891,7 +895,7 @@ const confirmDelete = async () => {
 
     console.log('發送刪除請求:', payload)
 
-    const response = await fetch('/api/files/delete', {
+    const response = await apiRequest('api/files/delete', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

@@ -1,35 +1,44 @@
-# FROM node:lts-alpine
-FROM keymetrics/pm2:18-alpine
+FROM node:18-alpine
 
-# 設定工作目錄
+# 安裝pnpm
+RUN npm install -g pnpm
+
+# 安裝工具以支持並行運行多個服務
+RUN npm install -g npm-run-all
+
+# 設置工作目錄
 WORKDIR /app
 
-ENV NODE_OPTIONS="--max_old_space_size=2048"
-ENV TZ="Asia/Taipei"
+# 複製package.json文件
+COPY package.json ./
 
-# 作者
-# 複製 package.json 和 package-lock.json 至工作目錄
-COPY package*.json .
-COPY pnpm-lock.yaml .
+# 安裝根目錄依賴
+RUN pnpm install
 
-# 複製所有
+# 複製前端和後端的package.json
+COPY web/package.json ./web/
+COPY express-upload-service/package.json ./express-upload-service/
+
+# 安裝前端和後端依賴
+RUN cd web && pnpm install
+RUN cd express-upload-service && pnpm install
+
+# 複製所有項目文件
 COPY . .
 
-#RUN npm rebuild --verbose sharp
-# 依照指定版本安裝依賴
-RUN npm install -g pnpm
-RUN npm cache clean --force
-RUN pnpm install 
+# 構建前端應用
+RUN cd web && pnpm run build
 
-# 建立生產版本
-RUN pnpm run build
-# RUN pnpm run build-sw
+# 設置環境變數
+ENV PORT=3000
+ENV NUXT_PUBLIC_SITE_URL=http://localhost:4088
+ENV API_SERVER_URL=http://localhost:3000
 
-# 暴露的連接埠
-EXPOSE 3022
+# 創建上傳和QR碼目錄
+RUN mkdir -p express-upload-service/uploads express-upload-service/qrcodes
 
-# 啟動應用程式
-# CMD ["node", ".output/server/index.mjs"]
+# 暴露前端和後端端口
+EXPOSE 4088 3000
 
-## 利用 PM2-runtime 來啟動 Nuxtjs service，並直接使用 env_prod 中的設定
-CMD [ "pm2-runtime", "start", "ecosystem.config.cjs", "--env", "prod" ]
+# 啟動服務
+CMD ["npm", "run", "start"] 

@@ -21,7 +21,9 @@ export default defineNuxtConfig({
     uploadDir: process.env.UPLOAD_DIR || '.output/public/uploads',
     qrcodesDir: process.env.QRCODES_DIR || '.output/public/qrcodes',
     public: {
-      siteUrl: process.env.NUXT_PUBLIC_SITE_URL || '',
+      siteUrl:
+        process.env.NUXT_PUBLIC_SITE_URL || 'https://qrcode.twhaodai.com',
+      apiServerUrl: process.env.API_SERVER_URL || 'http://localhost:3000',
     },
   },
 })

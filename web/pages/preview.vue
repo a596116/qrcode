@@ -233,6 +233,7 @@
 <script setup lang="ts">
 import { ref, onMounted, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
+import { apiRequest, getApiFileUrl } from '~/utils/api'
 
 // 路由和參數
 const route = useRoute()
@@ -315,7 +316,7 @@ const fetchFileInfo = async () => {
     }
 
     // 從API獲取檔案資訊
-    const response = await fetch(`/api/files/${fileId}`)
+    const response = await apiRequest(`api/files/${fileId}`)
 
     if (!response.ok) {
       throw new Error('無法獲取檔案資訊')
@@ -382,10 +383,18 @@ onMounted(() => {
   // 從URL獲取參數
   if (route.query.fileUrl) {
     fileUrl.value = route.query.fileUrl as string
+    // 如果是相對路徑，轉換為完整URL
+    if (fileUrl.value.startsWith('/')) {
+      fileUrl.value = getApiFileUrl(fileUrl.value)
+    }
   }
 
   if (route.query.qrCodeUrl) {
     qrCodeUrl.value = route.query.qrCodeUrl as string
+    // 如果是相對路徑，轉換為完整URL
+    if (qrCodeUrl.value.startsWith('/')) {
+      qrCodeUrl.value = getApiFileUrl(qrCodeUrl.value)
+    }
   }
 
   if (route.query.fileType) {
