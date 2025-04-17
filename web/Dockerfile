@@ -16,7 +16,7 @@ COPY package.json ./
 COPY pnpm-lock.yaml ./
 
 # 安裝依賴
-RUN pnpm install --frozen-lockfile
+RUN pnpm install 
 
 # 複製應用代碼
 COPY . .
@@ -42,7 +42,7 @@ RUN npm install -g pnpm
 COPY package.json ./
 
 # 僅安裝生產依賴
-RUN pnpm install --prod --frozen-lockfile
+RUN pnpm install --prod 
 
 # 從構建階段複製構建產物
 COPY --from=builder /app/.output ./.output
