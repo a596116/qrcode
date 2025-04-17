@@ -16,7 +16,7 @@ COPY package.json ./
 COPY pnpm-lock.yaml ./
 
 # 安裝依賴
-RUN pnpm install --frozen-lockfile --prod
+RUN pnpm install 
 
 # 創建必要的目錄
 RUN mkdir -p uploads qrcodes && \
