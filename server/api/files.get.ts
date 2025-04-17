@@ -1,5 +1,6 @@
 import { readdir, stat, mkdir } from 'fs/promises'
-import { join, basename, resolve } from 'path'
+import { join, basename, resolve, dirname } from 'path'
+import { fileURLToPath } from 'url'
 import { existsSync } from 'fs'
 
 export default defineEventHandler(async (event) => {
@@ -7,17 +8,25 @@ export default defineEventHandler(async (event) => {
     // 獲取運行時配置
     const config = useRuntimeConfig()
 
-    // 確定應用程序根目錄和目錄路徑
-    const projectRoot = resolve(process.cwd())
-    const uploadDir = resolve(
-      projectRoot,
-      String(config.uploadDir || 'public/uploads')
-    )
-    const qrCodesDir = resolve(
-      projectRoot,
-      String(config.qrcodesDir || 'public/qrcodes')
-    )
+    // 判斷是開發環境還是生產環境
+    const isDev = process.env.NODE_ENV === 'development'
 
+    // 根據環境決定根路徑
+    let basePath
+    if (isDev) {
+      // 開發環境使用項目根目錄
+      basePath = process.cwd()
+    } else {
+      // 生產環境，確保使用正確的路徑
+      basePath = resolve(process.cwd())
+    }
+
+    // 建立完整路徑
+    const uploadDir = resolve(basePath, String(config.uploadDir))
+    const qrCodesDir = resolve(basePath, String(config.qrcodesDir))
+
+    console.log('環境:', isDev ? '開發環境' : '生產環境')
+    console.log('基礎路徑:', basePath)
     console.log('上傳目錄路徑:', uploadDir)
     console.log('QR碼目錄路徑:', qrCodesDir)
 

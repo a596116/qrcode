@@ -17,9 +17,9 @@ export default defineNuxtConfig({
 
   // 添加運行時配置
   runtimeConfig: {
-    // 默認使用項目根目錄下的public目錄
-    uploadDir: process.env.UPLOAD_DIR || 'public/uploads',
-    qrcodesDir: process.env.QRCODES_DIR || 'public/qrcodes',
+    // 文件存儲路徑配置 - 開發模式使用public目錄，生產模式使用.output/public目錄
+    uploadDir: process.env.UPLOAD_DIR || '.output/public/uploads',
+    qrcodesDir: process.env.QRCODES_DIR || '.output/public/qrcodes',
     public: {
       siteUrl: process.env.NUXT_PUBLIC_SITE_URL || '',
     },
