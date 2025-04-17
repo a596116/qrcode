@@ -4,13 +4,22 @@ import { existsSync } from 'fs'
 
 export default defineEventHandler(async (event) => {
   try {
-    // 確定應用程序根目錄 - 修正在生產環境中的路徑問題
-    // const projectRoot = '/'
-    const projectRoot = resolve(process.cwd())
+    // 獲取運行時配置
+    const config = useRuntimeConfig()
 
-    // 獲取上傳文件和QR碼的目錄
-    const uploadDir = join(projectRoot, 'public', 'uploads')
-    const qrCodesDir = join(projectRoot, 'public', 'qrcodes')
+    // 確定應用程序根目錄和目錄路徑
+    const projectRoot = resolve(process.cwd())
+    const uploadDir = resolve(
+      projectRoot,
+      String(config.uploadDir || 'public/uploads')
+    )
+    const qrCodesDir = resolve(
+      projectRoot,
+      String(config.qrcodesDir || 'public/qrcodes')
+    )
+
+    console.log('上傳目錄路徑:', uploadDir)
+    console.log('QR碼目錄路徑:', qrCodesDir)
 
     // 檢查目錄是否存在，不存在則創建
     if (!existsSync(uploadDir)) {

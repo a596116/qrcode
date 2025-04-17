@@ -14,4 +14,14 @@ export default defineNuxtConfig({
       autoprefixer: {},
     },
   },
+
+  // 添加運行時配置
+  runtimeConfig: {
+    // 默認使用項目根目錄下的public目錄
+    uploadDir: process.env.UPLOAD_DIR || 'public/uploads',
+    qrcodesDir: process.env.QRCODES_DIR || 'public/qrcodes',
+    public: {
+      siteUrl: process.env.NUXT_PUBLIC_SITE_URL || '',
+    },
+  },
 })

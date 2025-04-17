@@ -14,14 +14,23 @@ export default defineEventHandler(async (event) => {
       }
     }
 
-    // 確定應用程序根目錄 - 修正在生產環境中的路徑問題
+    // 獲取運行時配置
+    const config = useRuntimeConfig()
+
+    // 確定應用程序根目錄和目錄路徑
     const projectRoot = resolve(process.cwd())
+    const uploadDir = resolve(
+      projectRoot,
+      String(config.uploadDir || 'public/uploads')
+    )
+    const qrCodesDir = resolve(
+      projectRoot,
+      String(config.qrcodesDir || 'public/qrcodes')
+    )
 
     // 根據類型確定文件路徑
     let filePath
     let relatedPath = null // 關聯文件路徑
-    const uploadDir = join(projectRoot, 'public', 'uploads')
-    const qrCodesDir = join(projectRoot, 'public', 'qrcodes')
 
     console.log('接收到刪除請求:', body)
     console.log('上傳目錄路徑:', uploadDir)

@@ -36,13 +36,22 @@ export default defineEventHandler(async (event) => {
       ? new TextDecoder().decode(lightColorField.data)
       : '#ffffff'
 
-    // 確定應用程序根目錄 - 修正在生產環境中的路徑問題
-    // const projectRoot = '/'
-    const projectRoot = resolve(process.cwd())
+    // 獲取運行時配置
+    const config = useRuntimeConfig()
 
-    // 創建上傳目錄
-    const uploadDir = join(projectRoot, 'public', 'uploads')
-    const qrCodesDir = join(projectRoot, 'public', 'qrcodes')
+    // 確定應用程序根目錄和目錄路徑
+    const projectRoot = resolve(process.cwd())
+    const uploadDir = resolve(
+      projectRoot,
+      String(config.uploadDir || 'public/uploads')
+    )
+    const qrCodesDir = resolve(
+      projectRoot,
+      String(config.qrcodesDir || 'public/qrcodes')
+    )
+
+    console.log('上傳目錄路徑:', uploadDir)
+    console.log('QR碼目錄路徑:', qrCodesDir)
 
     try {
       await mkdir(uploadDir, { recursive: true })
@@ -111,12 +120,12 @@ export default defineEventHandler(async (event) => {
 
     if ((isImage && fileField.data.length < 50000) || (!isImage && !isVideo)) {
       // 對於小圖像或其他檔案，QR碼包含檔案URL
-      qrContent = `${process.env.NUXT_PUBLIC_SITE_URL || ''}${fileUrl}`
+      qrContent = `${config.public.siteUrl || ''}${fileUrl}`
     } else {
       // 對於大型圖像和視訊，QR碼只包含檔案資訊
       qrContent = JSON.stringify({
         fileInfo,
-        fileUrl: `${process.env.NUXT_PUBLIC_SITE_URL || ''}${fileUrl}`,
+        fileUrl: `${config.public.siteUrl || ''}${fileUrl}`,
         message: '檔案太大，無法直接包含在QR碼中。此QR碼包含檔案資訊和連結。',
       })
     }
