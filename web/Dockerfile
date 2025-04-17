@@ -1,35 +1,54 @@
-# FROM node:lts-alpine
-FROM keymetrics/pm2:18-alpine
+FROM node:18-alpine AS builder
 
-# 設定工作目錄
-WORKDIR /
+# 設置工作目錄
+WORKDIR /app
 
-ENV NODE_OPTIONS="--max_old_space_size=2048"
-ENV TZ="Asia/Taipei"
+# 設置環境變數
+ENV NODE_ENV=production
+ENV NUXT_PUBLIC_SITE_URL=http://localhost:4088
+ENV API_SERVER_URL=http://localhost:3000
 
-# 作者
-# 複製 package.json 和 package-lock.json 至工作目錄
-COPY package*.json .
-COPY pnpm-lock.yaml .
+# 安裝pnpm
+RUN npm install -g pnpm
 
-# 複製所有
+# 複製package.json和lock文件
+COPY package.json ./
+COPY pnpm-lock.yaml ./
+
+# 安裝依賴
+RUN pnpm install --frozen-lockfile
+
+# 複製應用代碼
 COPY . .
 
-#RUN npm rebuild --verbose sharp
-# 依照指定版本安裝依賴
-RUN npm install -g pnpm
-RUN npm cache clean --force
-RUN pnpm install 
-
-# 建立生產版本
+# 構建應用
 RUN pnpm run build
-# RUN pnpm run build-sw
 
-# 暴露的連接埠
-EXPOSE 3022
+# 生產階段
+FROM node:18-alpine
 
-# 啟動應用程式
-# CMD ["node", ".output/server/index.mjs"]
+# 設置工作目錄
+WORKDIR /app
 
-## 利用 PM2-runtime 來啟動 Nuxtjs service，並直接使用 env_prod 中的設定
-CMD [ "pm2-runtime", "start", "ecosystem.config.cjs", "--env", "prod" ]
+# 設置環境變數
+ENV NODE_ENV=production
+ENV PORT=4088
+ENV TZ="Asia/Taipei"
+
+# 安裝pnpm
+RUN npm install -g pnpm
+
+# 複製package.json
+COPY package.json ./
+
+# 僅安裝生產依賴
+RUN pnpm install --prod --frozen-lockfile
+
+# 從構建階段複製構建產物
+COPY --from=builder /app/.output ./.output
+
+# 暴露端口
+EXPOSE 4088
+
+# 啟動應用
+CMD ["node", ".output/server/index.mjs"]
